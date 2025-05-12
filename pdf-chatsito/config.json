@@ -1,0 +1,7 @@
+{
+  "BUCKET_PDF": "chatsito-bucket-jsc",
+  "AWS_REGION": "us-east-1",
+  "DYNAMODB_TABLE": "pdf-table",
+  "BEDROCK_EMBEDDING_MODEL": "amazon.titan-embed-text-v1",
+  "BEDROCK_CHAT_MODEL": "amazon.titan-text-express-v1"
+}

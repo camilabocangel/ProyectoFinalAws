@@ -1,0 +1,105 @@
+service: pdf-ai-processor-v2
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ${file(config.json):AWS_REGION}
+  environment:
+    BUCKET_NAME: ${file(config.json):BUCKET_PDF}
+    TABLE_NAME: ${file(config.json):DYNAMODB_TABLE}
+    EMBEDDING_MODEL: ${file(config.json):BEDROCK_EMBEDDING_MODEL}
+    CHAT_MODEL: ${file(config.json):BEDROCK_CHAT_MODEL}
+    BEDROCK_REGION: ${file(config.json):AWS_REGION}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:GetObject"
+        - "s3:ListBucket"
+      Resource:
+        - "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*"
+        - "arn:aws:s3:::${self:provider.environment.BUCKET_NAME}"
+    - Effect: Allow
+      Action:
+        - "dynamodb:PutItem"
+        - "dynamodb:Query"
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TABLE_NAME}"
+    - Effect: Allow
+      Action:
+        - "bedrock:InvokeModel"
+      Resource: "arn:aws:bedrock:${self:provider.region}:*:foundation-model/*"
+
+package:
+  exclude:
+    - config.json
+    - package.json
+    - package-lock.json
+    - README.model
+    - .gitignore
+    - .serverless/**
+
+functions:
+  getUploadUrlPdf:
+    handler: handler.getUploadUrlPdf
+    events:
+      - httpApi:
+          path: /get-signed-url-pdf
+          method: get
+  
+  listarPdfs:
+    handler: handler.listarPdfs
+    events:
+      - httpApi:
+          path: /list-pdfs
+          method: get
+  
+  procesarPdf:
+    handler: handler.procesarPdf
+    events:
+      - s3:
+          bucket: ${self:provider.environment.BUCKET_NAME}
+          event: s3:ObjectCreated:*
+          existing: true
+  
+  queryPdf:
+    handler: handler.queryPdf
+    events:
+      - httpApi:
+          path: /query-pdf
+          method: post
+
+resources:
+  Resources:
+    PdfStorageBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_NAME}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - PUT
+                - POST
+                - GET
+              AllowedOrigins:
+                - "*"
+              AllowedHeaders:
+                - "*"
+              MaxAge: 3000
+    
+    PdfMetadataTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: DocumentId
+            AttributeType: S
+          - AttributeName: FragmentId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: DocumentId
+            KeyType: HASH
+          - AttributeName: FragmentId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
