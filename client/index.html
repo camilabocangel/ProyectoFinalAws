@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatsito Tung Tung</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Chatsito Tung Tung</h1>
+        
+        <!-- Sección de subida de archivos -->
+        <div class="upload-section">
+            <h2>Subir nuevo PDF</h2>
+            <input type="file" id="pdf-upload" accept=".pdf">
+            <button id="upload-btn">Subir PDF</button>
+            <div id="upload-status"></div>
+        </div>
+        
+        <!-- Sección de listado de PDFs -->
+        <div class="pdf-list-section">
+            <h2>PDFs disponibles</h2>
+            <div id="pdf-list"></div>
+        </div>
+        
+        <!-- Sección de consulta -->
+        <div class="query-section">
+            <h2>Consulta tu PDF</h2>
+            <select id="pdf-selector">
+                <option value="">Selecciona un PDF</option>
+            </select>
+            <textarea id="question-input" placeholder="Escribe tu pregunta aquí..."></textarea>
+            <button id="ask-btn">Preguntar</button>
+            <div id="answer-section"></div>
+        </div>
+    </div>
+    
+    <!--<script src="script.js"></script>-->
+</body>
+</html>
